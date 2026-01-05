@@ -1,0 +1,209 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>割り勘アプリ</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__left">
+      <div class="app-title">割り勘</div>
+      <div class="project-switch">
+        <select id="projectSelect" aria-label="プロジェクト選択"></select>
+      </div>
+    </div>
+    <div class="topbar__right">
+      <button class="btn btn--ghost" id="btnNewProject">＋プロジェクト</button>
+    </div>
+  </header>
+
+  <main class="main" id="main">
+    <!-- Projects -->
+    <section class="view" id="view-projects">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">プロジェクト</div>
+          <div class="card__actions">
+            <button class="btn" id="btnManageMembers">メンバー管理</button>
+          </div>
+        </div>
+        <div class="card__body">
+          <div id="projectList" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">カテゴリ</div>
+          <div class="card__actions">
+            <button class="btn" id="btnAddCategory">＋カテゴリ</button>
+          </div>
+        </div>
+        <div class="card__body">
+          <div id="categoryList" class="chips"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">手動調整（精算へ反映）</div>
+          <div class="card__subtitle">方式A：非数値インセンティブは記録のみ。金額に反映したい場合はここで調整。</div>
+          <div class="card__actions">
+            <button class="btn" id="btnAddAdjustment">＋調整</button>
+          </div>
+        </div>
+        <div class="card__body">
+          <div id="adjustmentList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Expenses -->
+    <section class="view hidden" id="view-expenses">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">支出</div>
+          <div class="card__actions">
+            <button class="btn btn--primary" id="btnAddExpense">＋支出</button>
+          </div>
+        </div>
+
+        <div class="card__body">
+          <div class="filters">
+            <select id="filterCategory"></select>
+            <select id="filterMember"></select>
+            <input id="filterText" type="search" placeholder="検索（タイトル/メモ）" />
+          </div>
+          <div id="expenseList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settle -->
+    <section class="view hidden" id="view-settle">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">精算</div>
+          <div class="card__subtitle">各人の残高（支払−負担）から、送金回数が少ない精算案を提案します。</div>
+        </div>
+        <div class="card__body">
+          <div id="balanceList" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">精算提案（送金リスト）</div>
+        </div>
+        <div class="card__body">
+          <div id="settlementList" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">当事者関係マップ（ペア別）</div>
+          <div class="card__subtitle">「誰が誰に負債を持つか」を累積表示します（支出＋手動調整）。</div>
+        </div>
+        <div class="card__body">
+          <div id="pairMap" class="pairmap"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Incentives -->
+    <section class="view hidden" id="view-incentives">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">インセンティブ（記録のみ：方式A）</div>
+          <div class="card__actions">
+            <button class="btn btn--primary" id="btnAddIncentive">＋記録</button>
+          </div>
+        </div>
+        <div class="card__body">
+          <div id="incentiveList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="view hidden" id="view-settings">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__title">設定</div>
+        </div>
+        <div class="card__body">
+          <div class="kv">
+            <div class="kv__row">
+              <div class="kv__k">データ</div>
+              <div class="kv__v">
+                <button class="btn" id="btnExport">エクスポート</button>
+                <button class="btn btn--danger" id="btnReset">初期化</button>
+              </div>
+            </div>
+            <div class="kv__row">
+              <div class="kv__k">端数処理</div>
+              <div class="kv__v">
+                <select id="roundingRule">
+                  <option value="NONE">なし（1円単位）</option>
+                  <option value="ROUND_10">10円単位（四捨五入）</option>
+                  <option value="ROUND_100">100円単位（四捨五入）</option>
+                  <option value="FLOOR_10">10円単位（切り捨て）</option>
+                  <option value="FLOOR_100">100円単位（切り捨て）</option>
+                  <option value="CEIL_10">10円単位（切り上げ）</option>
+                  <option value="CEIL_100">100円単位（切り上げ）</option>
+                </select>
+              </div>
+            </div>
+            <div class="kv__row">
+              <div class="kv__k">通貨記号</div>
+              <div class="kv__v">
+                <input id="currencySymbol" placeholder="例：¥" />
+              </div>
+            </div>
+          </div>
+          <p class="muted">
+            注：このアプリは localStorage に保存します（同じ端末・同じブラウザで有効）。同期が必要ならFirebase等へ拡張できます。
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="ナビゲーション">
+    <button class="tab is-active" data-nav="projects">
+      <div class="tab__icon">▦</div><div class="tab__label">プロジェクト</div>
+    </button>
+    <button class="tab" data-nav="expenses">
+      <div class="tab__icon">🧾</div><div class="tab__label">支出</div>
+    </button>
+    <button class="tab" data-nav="settle">
+      <div class="tab__icon">⇄</div><div class="tab__label">精算</div>
+    </button>
+    <button class="tab" data-nav="incentives">
+      <div class="tab__icon">★</div><div class="tab__label">記録</div>
+    </button>
+    <button class="tab" data-nav="settings">
+      <div class="tab__icon">⚙</div><div class="tab__label">設定</div>
+    </button>
+  </nav>
+
+  <!-- Modal -->
+  <div class="modal hidden" id="modal">
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+    <div class="modal__sheet" role="dialog" aria-modal="true" aria-label="入力フォーム">
+      <div class="modal__header">
+        <div class="modal__title" id="modalTitle">タイトル</div>
+        <button class="btn btn--ghost" id="modalClose">閉じる</button>
+      </div>
+      <div class="modal__body" id="modalBody"></div>
+      <div class="modal__footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
